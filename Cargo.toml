@@ -1,0 +1,12 @@
+[package]
+name = "uri"
+version = "0.1.0"
+authors = ["Jean Piere Dudey <jeandudey@hotmail.com>"]
+
+[dependencies]
+regex = "0.1"
+clippy = {version = "*", optional = true}
+
+[features]
+default = []
+dev = ["clippy"]
