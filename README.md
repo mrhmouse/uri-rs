@@ -2,6 +2,12 @@
   <a href="https://travis-ci.org/jeandudey/uri-rs">
       <img src="https://travis-ci.org/jeandudey/uri-rs.svg?branch=master" alt="Build Status">
   </a>
+
+  <strong>
+    <a href="https://jeandudey.github.io/uri-rs">
+    Documentation
+    </a>
+  </strong>
 </p>
 
 ## uri-rs
