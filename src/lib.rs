@@ -85,8 +85,9 @@ pub struct Uri {
     /// ```
     /// use uri::Uri;
     ///
-    /// let uri = Uri::new("https:/doc.rust-lang.org:1234");
-    /// assert_eq!(uri.port.unwrap(), 1234);
+    /// let uri = Uri::new("https://doc.rust-lang.org:1234").unwrap();
+    /// assert_eq!(uri.host.unwrap(), "doc.rust-lang.org");
+    /// assert_eq!(uri.port, Some(1234));
     /// ```
     pub port: Option<u16>,
 
@@ -115,13 +116,16 @@ macro_rules! map_to_u16 {
     };
 }
 
-static URI_PATTERN: &'static str = "(?P<scheme>[a-zA-Z][a-zA-Z0-9+.-]*):\
-                                    (?P<authority_and_path>[^?#]*)(?:\\?([^#]*))?(?:#(.*))?";
+static URI_PATTERN: &'static str = "^(?P<scheme>[a-zA-Z][a-zA-Z0-9+.-]*):\
+                                    /{0,3}\
+                                    (?P<username>.*?)?\
+                                    (:(?P<password>.*?))?@?\
+                                    (?P<host>[0-9\\.A-Za-z-?]+)\
+                                    (?::(?P<port>\\d+))?\
+                                    (:?(?P<path>/[^?#]*))?\
+                                    (?:\\?(?P<query>[^#]*))?\
+                                    (?:#(?P<fragment>.*))?$";
 
-static AUTHORITY_AND_PATH_PATTERN: &'static str = "//(?P<authority>[^/]*)(?P<path>/.*)?";
-static AUTHORITY_PATTERN: &'static str = "(?:(?P<username>[^@:]*)(?::\
-                                          (?P<password>[^@]*))?@)(?P<host>\\[[^\\]]*\\]|[^\\[:\
-                                          ]*)(?::(?P<port>\\d*))?";
 
 /// Checks if a given string is an URI.
 ///
@@ -134,7 +138,10 @@ static AUTHORITY_PATTERN: &'static str = "(?:(?P<username>[^@:]*)(?::\
 /// assert_eq!(result, true);
 /// ```
 pub fn is_uri(uristr: &str) -> bool {
-    let uri_re = Regex::new(URI_PATTERN).unwrap();
+    let uri_re = Regex::new("([a-zA-Z][a-zA-Z0-9+.-]*):\
+                            ([^?#]*)\
+                            (?:\\?([^#]*))?\
+                            (?:#(.*))?").unwrap();
     uri_re.is_match(uristr)
 }
 
@@ -170,46 +177,21 @@ impl Uri {
         };
 
         let uri_re = Regex::new(URI_PATTERN).unwrap();
-        let uricaps = match uri_re.captures(uristr) {
-            Some(value) => value,
-            None => return None,
-        };
-
-        let scheme = map_to_string!(uricaps.name("scheme"));
-        match scheme {
-            Some(value) => uri.scheme = value,
-            None => return None,
-        };
-
-        let auth_and_path = uricaps.name("authority_and_path");
-        if auth_and_path == None {
-            return None;
-        }
-
-        let auth_and_path_re = Regex::new(AUTHORITY_AND_PATH_PATTERN).unwrap();
-        let auth_and_path_caps = match auth_and_path_re.captures(auth_and_path.unwrap()) {
-            Some(value) => value,
-            None => return None,
-        };
-
-
-        let authority = auth_and_path_caps.name("authority");
-        if authority == None {
-            return None;
-        }
-
-        let authority_re = Regex::new(AUTHORITY_PATTERN).unwrap();
-        match authority_re.captures(authority.unwrap()) {
+        match uri_re.captures(uristr) {
             Some(caps) => {
+                match caps.name("scheme") {
+                    Some(scheme) => uri.scheme = String::from(scheme),
+                    None => {println!("here"); return None;}
+                }
+
                 uri.username = map_to_string!(caps.name("username"));
                 uri.password = map_to_string!(caps.name("password"));
                 uri.host = map_to_string!(caps.name("host"));
                 uri.port = map_to_u16!(caps.name("port"));
-            }
-            None => uri.host = Some(String::from(authority.unwrap())),
-        }
-
-        uri.path = map_to_string!(auth_and_path_caps.name("path"));
+                uri.path = map_to_string!(caps.name("path"));
+            },
+            None => return None
+        };
 
         Some(uri)
     }
