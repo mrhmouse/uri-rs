@@ -102,6 +102,30 @@ pub struct Uri {
     /// assert_eq!(uri.path.unwrap(), "/book/README.html");
     /// ```
     pub path: Option<String>,
+
+    /// Represents the query of an uri.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uri::Uri;
+    ///
+    /// let uri = Uri::new("https:/doc.rust-lang.org/?query=value&q=v").unwrap();
+    /// assert_eq!(uri.query.unwrap(), "query=value&q=v");
+    /// ```
+    pub query: Option<String>,
+
+    /// Represents the fragment of an uri.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uri::Uri;
+    ///
+    /// let uri = Uri::new("https:/doc.rust-lang.org/#fragment").unwrap();
+    /// assert_eq!(uri.fragment.unwrap(), "fragment");
+    /// ```
+    pub fragment: Option<String>,
 }
 
 macro_rules! map_to_string {
@@ -174,6 +198,8 @@ impl Uri {
             host: None,
             port: None,
             path: None,
+            query: None,
+            fragment: None,
         };
 
         let uri_re = Regex::new(URI_PATTERN).unwrap();
@@ -189,6 +215,8 @@ impl Uri {
                 uri.host = map_to_string!(caps.name("host"));
                 uri.port = map_to_u16!(caps.name("port"));
                 uri.path = map_to_string!(caps.name("path"));
+                uri.query = map_to_string!(caps.name("query"));
+                uri.fragment = map_to_string!(caps.name("fragment"));
             },
             None => return None
         };
