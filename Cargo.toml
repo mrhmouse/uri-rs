@@ -11,7 +11,7 @@ description = "uri is a library to help in the creation and parsing of an uri."
 
 [dependencies]
 regex = "0.1"
-clippy = {version = "*", optional = true}
+clippy = {version = "0.0.37", optional = true}
 
 [features]
 default = []
