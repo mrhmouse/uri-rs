@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["is_uri","Checks if a given string is an URI."]],"struct":[["Uri","Uri represents the data contained in an uri string."]]});
