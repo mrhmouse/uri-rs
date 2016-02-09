@@ -6,7 +6,7 @@ repository = "https://github.com/jeandudey/uri-rs.git"
 homepage = "https://github.com/jeandudey/uri-rs.git"
 license = "Apache-2.0"
 readme = "README.md"
-documentation = "http://killercup.github.io/hsl-rs/"
+documentation = "http://jeandudey.github.io/uri-rs/"
 description = "uri is a library to help in the creation and parsing of an uri."
 
 [dependencies]
