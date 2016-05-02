@@ -144,9 +144,17 @@ pub struct Uri {
 }
 
 macro_rules! map_to_string {
-    ( $x:expr ) => {
-        $x.map(String::from);
-    };
+    ( $x:expr ) => ({
+        if let Some(contents) = $x.map(String::from) {
+            if contents == "" {
+                None
+            } else {
+                Some(contents)
+            }
+        } else {
+            None
+        }
+    });
 }
 
 macro_rules! map_to_u16 {
