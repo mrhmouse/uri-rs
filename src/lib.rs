@@ -159,10 +159,13 @@ macro_rules! map_to_string {
     });
 }
 
-macro_rules! map_to_u16 {
-    ( $x:expr ) => {
-        $x.map(|value| String::from(value).parse::<u16>().unwrap());
-    };
+/// Parses a string into a u16.
+
+fn map_to_u16(value: &str) -> Option<u16> {
+    match String::from(value).parse::<u16>() {
+        Ok(parsed_value) => Some(parsed_value),
+        _ => None
+    }
 }
 
 lazy_static! {
@@ -236,7 +239,7 @@ impl Uri {
                 uri.username = map_to_string!(caps.name("username"));
                 uri.password = map_to_string!(caps.name("password"));
                 uri.host = map_to_string!(caps.name("host"));
-                uri.port = map_to_u16!(caps.name("port"));
+                uri.port = caps.name("port").and_then(map_to_u16);
                 uri.path = map_to_string!(caps.name("path"));
                 uri.query = map_to_string!(caps.name("query"));
                 uri.fragment = map_to_string!(caps.name("fragment"));
