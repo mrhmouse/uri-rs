@@ -39,6 +39,8 @@
 /// extern crate uri;
 /// ```
 
+#[macro_use]
+extern crate lazy_static;
 extern crate regex;
 use regex::*;
 
@@ -163,6 +165,10 @@ macro_rules! map_to_u16 {
     };
 }
 
+lazy_static! {
+    static ref URI_REGEX: Regex = Regex::new(URI_PATTERN).unwrap();
+}
+
 static URI_PATTERN: &'static str = "^(?P<scheme>[a-zA-Z][a-zA-Z0-9+.-]*):\
                                     /{0,3}\
                                     (?P<username>.*?)?\
@@ -172,7 +178,6 @@ static URI_PATTERN: &'static str = "^(?P<scheme>[a-zA-Z][a-zA-Z0-9+.-]*):\
                                     (:?(?P<path>/[^?#]*))?\
                                     (?:\\?(?P<query>[^#]*))?\
                                     (?:#(?P<fragment>.*))?$";
-
 
 /// Checks if a given string is an URI.
 ///
@@ -185,11 +190,7 @@ static URI_PATTERN: &'static str = "^(?P<scheme>[a-zA-Z][a-zA-Z0-9+.-]*):\
 /// assert_eq!(result, true);
 /// ```
 pub fn is_uri(uristr: &str) -> bool {
-    let uri_re = Regex::new("([a-zA-Z][a-zA-Z0-9+.-]*):\
-                            ([^?#]*)\
-                            (?:\\?([^#]*))?\
-                            (?:#(.*))?").unwrap();
-    uri_re.is_match(uristr)
+    URI_REGEX.is_match(uristr)
 }
 
 impl Uri {
@@ -225,8 +226,7 @@ impl Uri {
             fragment: None,
         };
 
-        let uri_re = Regex::new(URI_PATTERN).unwrap();
-        match uri_re.captures(uristr) {
+        match URI_REGEX.captures(uristr) {
             Some(caps) => {
                 match caps.name("scheme") {
                     Some(scheme) => uri.scheme = String::from(scheme),
