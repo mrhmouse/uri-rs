@@ -256,6 +256,16 @@ mod test {
     }
 
     #[test]
+    fn blank_username_should_parse_as_none() {
+        let uri_with_blank_username = "http://some.host/";
+        if let Some(parsed_uri) = ::Uri::new(uri_with_blank_username) {
+            assert_eq!(parsed_uri.username, None);
+        } else {
+            panic!("Cannot create a URI from a valid string");
+        }
+    }
+
+    #[test]
     fn uri_new() {
         match ::Uri::new(URI_GOOD_STRING) {
             Some(uri) => {
