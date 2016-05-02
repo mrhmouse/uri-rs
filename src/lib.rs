@@ -274,6 +274,18 @@ mod test {
     }
 
     #[test]
+    fn bad_port_shouldnt_panic() {
+        let bad_port_uri = "http://some.host:99999";
+        if let Some(parsed_uri) = ::Uri::new(bad_port_uri) {
+            if let Some(weird_port) = parsed_uri.port {
+                panic!("Incorrectly parsed port as {}", weird_port);
+            }
+        } else {
+            panic!("Cannot create URI");
+        }
+    }
+
+    #[test]
     fn uri_new() {
         match ::Uri::new(URI_GOOD_STRING) {
             Some(uri) => {
