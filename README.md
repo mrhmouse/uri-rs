@@ -3,6 +3,8 @@
       <img src="https://travis-ci.org/jeandudey/uri-rs.svg?branch=master" alt="Build Status">
   </a>
 
+  <br />
+
   <strong>
     <a href="https://jeandudey.github.io/uri-rs">
     Documentation
