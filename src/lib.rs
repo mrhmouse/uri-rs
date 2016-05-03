@@ -159,10 +159,13 @@ macro_rules! map_to_string {
     });
 }
 
-macro_rules! map_to_u16 {
-    ( $x:expr ) => {
-        $x.map(|value| String::from(value).parse::<u16>().unwrap());
-    };
+/// Parses a string into a u16.
+
+fn map_to_u16(value: &str) -> Option<u16> {
+    match String::from(value).parse::<u16>() {
+        Ok(parsed_value) => Some(parsed_value),
+        _ => None
+    }
 }
 
 lazy_static! {
@@ -236,7 +239,7 @@ impl Uri {
                 uri.username = map_to_string!(caps.name("username"));
                 uri.password = map_to_string!(caps.name("password"));
                 uri.host = map_to_string!(caps.name("host"));
-                uri.port = map_to_u16!(caps.name("port"));
+                uri.port = caps.name("port").and_then(map_to_u16);
                 uri.path = map_to_string!(caps.name("path"));
                 uri.query = map_to_string!(caps.name("query"));
                 uri.fragment = map_to_string!(caps.name("fragment"));
@@ -270,6 +273,18 @@ mod test {
             assert_eq!(parsed_uri.username, None);
         } else {
             panic!("Cannot create a URI from a valid string");
+        }
+    }
+
+    #[test]
+    fn bad_port_shouldnt_panic() {
+        let bad_port_uri = "http://some.host:99999";
+        if let Some(parsed_uri) = ::Uri::new(bad_port_uri) {
+            if let Some(weird_port) = parsed_uri.port {
+                panic!("Incorrectly parsed port as {}", weird_port);
+            }
+        } else {
+            panic!("Cannot create URI");
         }
     }
 
