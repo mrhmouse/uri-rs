@@ -26,8 +26,9 @@
 //!
 //! # Usage
 //!
-//! This crate is on crates.io and can be used by adding uri to your dependencies in your
-//! project's Cargo.toml.
+//! This crate is available on [crates.io](https://crates.io/crates/uri)
+//! and can be used by adding `uri` to the dependencies in your
+//! project's `Cargo.toml` file.
 //!
 //! ```toml
 //! [dependencies]
