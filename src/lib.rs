@@ -1,3 +1,4 @@
+
 /*
  *   Copyright 2016 Jean Piere Dudey
  *
@@ -42,6 +43,7 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
+use std::fmt;
 use regex::*;
 
 /// Uri represents the data contained in an uri string.
@@ -311,4 +313,126 @@ mod test {
         }
     }
 
+    #[test]
+    fn uri_should_parse_roundtrip() {
+        let uris = ["http://user:pass@host.tld/path?query#fragment",
+                    "https://host.tld/?query=1234&asdf=bar",
+                    "ftp://user@subdomain.host.tld/",
+                    "some-custom-scheme://foo.bar.baz/path#some-fragment&a=1",
+                    "gopher://foo.bar:1234/asdf"];
+        for uri in uris.iter() {
+            test_roundtrip_parsing(uri);
+        }
+    }
+
+    fn test_roundtrip_parsing(uri: &str) {
+        let original = ::Uri::new(uri)
+            .expect("Cannot parse URI from a valid string");
+        let roundtrip = ::Uri::new(original.to_string().as_str())
+            .expect("Cannot parse URI from string version of a Uri struct");
+
+        assert_eq!(original.scheme, roundtrip.scheme);
+        assert_eq!(original.username, roundtrip.username);
+        assert_eq!(original.password, roundtrip.password);
+        assert_eq!(original.host, roundtrip.host);
+        assert_eq!(original.port, roundtrip.port);
+        assert_eq!(original.path, roundtrip.path);
+        assert_eq!(original.query, roundtrip.query);
+        assert_eq!(original.fragment, roundtrip.fragment);
+    }
+}
+
+struct UriWriter<'a, 'b, 'c: 'b> {
+    uri: &'a Uri,
+    formatter: &'b mut fmt::Formatter<'c>,
+}
+
+impl<'a, 'b, 'c> UriWriter<'a, 'b, 'c> {
+    fn new(uri: &'a Uri, formatter: &'b mut fmt::Formatter<'c>)
+           -> UriWriter<'a, 'b, 'c> {
+        return UriWriter { uri: uri, formatter: formatter};
+    }
+
+    fn write_uri(&mut self) -> fmt::Result {
+        if !self.is_valid_uri() {
+            return Err(fmt::Error);
+        }
+        
+        try!(self.write_scheme());
+        try!(self.write_authority());
+        try!(self.write_host());
+        try!(self.write_port());
+        try!(self.write_path());
+        try!(self.write_query());
+        return self.write_fragment();
+    }
+
+    fn is_valid_uri(&self) -> bool {
+        return self.uri.host.is_some();
+    }
+
+    fn write_scheme(&mut self) -> fmt::Result {
+        return write!(self.formatter, "{}://", self.uri.scheme);
+    }
+
+    fn write_authority(&mut self) -> fmt::Result {
+        if let Some(ref user) = self.uri.username {
+            try!(write!(self.formatter, "{}", user));
+            if let Some(ref pass) = self.uri.password {
+                try!(write!(self.formatter, ":{}", pass));
+            }
+
+            try!(write!(self.formatter, "@"));
+        }
+
+        return Ok(());
+    }
+
+    fn write_host(&mut self) -> fmt::Result {
+        if let Some(ref host) = self.uri.host {
+            return write!(self.formatter, "{}", host);
+        } else {
+            return Err(fmt::Error);
+        }
+    }
+
+    fn write_port(&mut self) -> fmt::Result {
+        if let Some(ref port) = self.uri.port {
+            try!(write!(self.formatter, ":{}", port));
+        }
+
+        return Ok(());
+    }
+
+    fn write_path(&mut self) -> fmt::Result {
+        if let Some(ref path) = self.uri.path {
+            return write!(self.formatter, "{}", path);
+        } else {
+            return write!(self.formatter, "/");
+        }
+    }
+
+    fn write_query(&mut self) -> fmt::Result {
+        if let Some(ref query) = self.uri.query {
+            try!(write!(self.formatter, "?{}", query));
+        }
+
+        return Ok(());
+    }
+
+    fn write_fragment(&mut self) -> fmt::Result {
+        if let Some(ref fragment) = self.uri.fragment {
+            try!(write!(self.formatter, "#{}", fragment));
+        }
+
+        return Ok(());
+    }
+}
+
+impl fmt::Display for Uri {
+    fn fmt(&self, f: &mut fmt::Formatter)
+           -> fmt::Result {
+        let mut writer = UriWriter::new(self, f);
+        writer.write_uri()
+    }
 }
