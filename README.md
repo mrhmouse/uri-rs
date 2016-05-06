@@ -24,13 +24,13 @@ use uri::Uri;
 
 fn main() {
     match Uri::new("https://github.com/jeandudey/uri-rs/") {
-        Some(uri) => {
+        Ok(uri) => {
             println!("-- URI INFO --");
             println!("Scheme: {}", uri.scheme);
             println!("Host: {}", uri.host.unwrap());
             println!("Path: {}", uri.path.unwrap());
         },
-        None => panic!("Oh no!")
+        Err(e) => panic!("Oh no! {}", e)
     }
 }
 ```
