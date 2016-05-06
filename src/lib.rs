@@ -50,100 +50,27 @@ use regex::*;
 #[derive(Default, Debug)]
 pub struct Uri {
     /// Represents the scheme of an uri.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uri::Uri;
-    ///
-    /// let uri = Uri::new("https://doc.rust-lang.org/book/README.html").unwrap();
-    /// assert_eq!(uri.scheme, "https");
-    /// ```
     pub scheme: String,
 
     /// Represents the username (authority) of an uri.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uri::Uri;
-    ///
-    /// let uri = Uri::new("https://user:pass@doc.rust-lang.org/book/README.html").unwrap();
-    /// assert_eq!(uri.username.unwrap(), "user");
-    /// ```
     pub username: Option<String>,
 
     /// Represents the password (authority) of an uri.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uri::Uri;
-    ///
-    /// let uri = Uri::new("https://user:pass@doc.rust-lang.org/book/README.html").unwrap();
-    /// assert_eq!(uri.password.unwrap(), "pass");
-    /// ```
     pub password: Option<String>,
 
     /// Represents the host of an uri.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uri::Uri;
-    ///
-    /// let uri = Uri::new("https://doc.rust-lang.org/book/README.html").unwrap();
-    /// assert_eq!(uri.host.unwrap(), "doc.rust-lang.org");
-    /// ```
     pub host: Option<String>,
 
     /// Represents the port of an uri.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uri::Uri;
-    ///
-    /// let uri = Uri::new("https://doc.rust-lang.org:1234").unwrap();
-    /// assert_eq!(uri.host.unwrap(), "doc.rust-lang.org");
-    /// assert_eq!(uri.port, Some(1234));
-    /// ```
     pub port: Option<u16>,
 
     /// Represents the path of an uri.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uri::Uri;
-    ///
-    /// let uri = Uri::new("https:/doc.rust-lang.org/book/README.html").unwrap();
-    /// assert_eq!(uri.path.unwrap(), "/book/README.html");
-    /// ```
     pub path: Option<String>,
 
     /// Represents the query of an uri.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uri::Uri;
-    ///
-    /// let uri = Uri::new("https:/doc.rust-lang.org/?query=value&q=v").unwrap();
-    /// assert_eq!(uri.query.unwrap(), "query=value&q=v");
-    /// ```
     pub query: Option<String>,
 
     /// Represents the fragment of an uri.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uri::Uri;
-    ///
-    /// let uri = Uri::new("https:/doc.rust-lang.org/#fragment").unwrap();
-    /// assert_eq!(uri.fragment.unwrap(), "fragment");
-    /// ```
     pub fragment: Option<String>,
 }
 
