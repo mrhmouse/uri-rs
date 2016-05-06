@@ -23,22 +23,22 @@
 #![cfg_attr(feature="dev", feature(plugin))]
 #![cfg_attr(feature="dev", plugin(clippy))]
 
-/// This crate provides the type Uri used to parse a given uri string.
-///
-/// # Usage
-///
-/// This crate is on crates.io and can be used by adding uri to your dependencies in your
-/// project's Cargo.toml.
-///
-/// ```toml
-/// [dependencies]
-/// uri = "0.1"
-/// ```
-///
-/// and this to your crate root:
-/// ```
-/// extern crate uri;
-/// ```
+//! This crate provides the type Uri used to parse a given uri string.
+//!
+//! # Usage
+//!
+//! This crate is on crates.io and can be used by adding uri to your dependencies in your
+//! project's Cargo.toml.
+//!
+//! ```toml
+//! [dependencies]
+//! uri = "0.2"
+//! ```
+//!
+//! and this to your crate root:
+//! ```
+//! extern crate uri;
+//! ```
 
 #[macro_use]
 extern crate lazy_static;
