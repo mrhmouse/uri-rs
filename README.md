@@ -15,6 +15,18 @@
 ## uri-rs
 `uri` is a library to help in parsing and creating an uri.
 
+## Installation
+The `uri` library is available on [crates.io](https://crates.io/crates/uri) and can be installed via Cargo:
+```shell
+cargo install uri
+```
+
+You can also add it to your project's dependencies in its `Cargo.toml` file:
+```toml
+[dependencies]
+uri = "0.2"
+```
+
 ### Examples
 - Parsing an uri.
 ```rust
