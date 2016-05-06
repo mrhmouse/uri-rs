@@ -32,7 +32,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uri = "0.1"
+//! uri = "0.2"
 //! ```
 //!
 //! and this to your crate root:
