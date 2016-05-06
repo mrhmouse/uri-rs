@@ -125,6 +125,15 @@ pub fn is_uri(uristr: &str) -> bool {
     URI_REGEX.is_match(uristr)
 }
 
+/// Error returned by Uri::new if it fails.                               
+pub enum ParseError {
+    /// Not a valid uri.
+    InvalidUri,
+    
+    /// The scheme part from the uri is invalid.
+    InvalidScheme,
+}
+
 impl Uri {
     /// Creates Uri object from a given uri string.
     ///
@@ -142,9 +151,9 @@ impl Uri {
     ///     None => panic!("Oh no!")
     /// };
     /// ```
-    pub fn new(uristr: &str) -> Option<Uri> {
+    pub fn new(uristr: &str) -> Result<Uri, ParseError> {
         if !is_uri(uristr) {
-            return None;
+            return Err(ParseError::InvalidUri);
         }
 
         let mut uri = Uri {
@@ -162,7 +171,9 @@ impl Uri {
             Some(caps) => {
                 match caps.name("scheme") {
                     Some(scheme) => uri.scheme = String::from(scheme),
-                    None => {println!("here"); return None;}
+                    None => {
+                        return Err(ParseError::InvalidScheme);
+                    }
                 }
 
                 uri.username = map_to_string!(caps.name("username"));
@@ -173,7 +184,7 @@ impl Uri {
                 uri.query = map_to_string!(caps.name("query"));
                 uri.fragment = map_to_string!(caps.name("fragment"));
             },
-            None => return None
+            None => return Err(ParseError::InvalidUri);
         };
 
         Some(uri)
