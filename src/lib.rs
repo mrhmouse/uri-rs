@@ -44,6 +44,7 @@
 extern crate lazy_static;
 extern crate regex;
 use std::fmt;
+use std::error;
 use regex::*;
 
 /// Uri represents the data contained in an uri string.
@@ -74,22 +75,7 @@ pub struct Uri {
     pub fragment: Option<String>,
 }
 
-macro_rules! map_to_string {
-    ( $x:expr ) => ({
-        if let Some(contents) = $x.map(String::from) {
-            if contents == "" {
-                None
-            } else {
-                Some(contents)
-            }
-        } else {
-            None
-        }
-    });
-}
-
 /// Parses a string into a u16.
-
 fn map_to_u16(value: &str) -> Option<u16> {
     match String::from(value).parse::<u16>() {
         Ok(parsed_value) => Some(parsed_value),
@@ -125,7 +111,8 @@ pub fn is_uri(uristr: &str) -> bool {
     URI_REGEX.is_match(uristr)
 }
 
-/// Error returned by Uri::new if it fails.                               
+/// Error returned by Uri::new if it fails.
+#[derive(Debug, Clone, Copy)]
 pub enum ParseError {
     /// Not a valid uri.
     InvalidUri,
@@ -147,8 +134,8 @@ impl Uri {
     /// use uri::Uri;
     ///
     /// let uri = match Uri::new("https://doc.rust-lang.org/book/README.html") {
-    ///     Some(value) => value,
-    ///     None => panic!("Oh no!")
+    ///     Ok(value) => value,
+    ///     Err(e) => panic!("Oh no! {}", e)
     /// };
     /// ```
     pub fn new(uristr: &str) -> Result<Uri, ParseError> {
@@ -169,25 +156,30 @@ impl Uri {
 
         match URI_REGEX.captures(uristr) {
             Some(caps) => {
-                match caps.name("scheme") {
-                    Some(scheme) => uri.scheme = String::from(scheme),
+                uri.scheme = match caps.name("scheme").map(String::from) {
+                    Some(s) => s,
                     None => {
                         return Err(ParseError::InvalidScheme);
                     }
+                };
+                
+                uri.username = caps.name("username").map(String::from);
+                
+                if uri.username == Some(String::from("")) {
+                    uri.username = None;
                 }
-
-                uri.username = map_to_string!(caps.name("username"));
-                uri.password = map_to_string!(caps.name("password"));
-                uri.host = map_to_string!(caps.name("host"));
+                
+                uri.password = caps.name("password").map(String::from);
+                uri.host = caps.name("host").map(String::from);
                 uri.port = caps.name("port").and_then(map_to_u16);
-                uri.path = map_to_string!(caps.name("path"));
-                uri.query = map_to_string!(caps.name("query"));
-                uri.fragment = map_to_string!(caps.name("fragment"));
+                uri.path = caps.name("path").map(String::from);
+                uri.query = caps.name("query").map(String::from);
+                uri.fragment = caps.name("fragment").map(String::from);
             },
-            None => return Err(ParseError::InvalidUri);
+            None => return Err(ParseError::InvalidUri),
         };
 
-        Some(uri)
+        Ok(uri)
     }
 }
 
@@ -209,7 +201,7 @@ mod test {
     #[test]
     fn blank_username_should_parse_as_none() {
         let uri_with_blank_username = "http://some.host/";
-        if let Some(parsed_uri) = ::Uri::new(uri_with_blank_username) {
+        if let Ok(parsed_uri) = ::Uri::new(uri_with_blank_username) {
             assert_eq!(parsed_uri.username, None);
         } else {
             panic!("Cannot create a URI from a valid string");
@@ -219,7 +211,7 @@ mod test {
     #[test]
     fn bad_port_shouldnt_panic() {
         let bad_port_uri = "http://some.host:99999";
-        if let Some(parsed_uri) = ::Uri::new(bad_port_uri) {
+        if let Ok(parsed_uri) = ::Uri::new(bad_port_uri) {
             if let Some(weird_port) = parsed_uri.port {
                 panic!("Incorrectly parsed port as {}", weird_port);
             }
@@ -231,23 +223,23 @@ mod test {
     #[test]
     fn uri_new() {
         match ::Uri::new(URI_GOOD_STRING) {
-            Some(uri) => {
+            Ok(uri) => {
                 assert_eq!(uri.scheme, "https");
                 assert_eq!(uri.host.unwrap(), "www.unknown.host");
                 assert_eq!(uri.path.unwrap(), "/false/path.html");
             }
-            None => panic!("Cannot create uri from a valid one"),
+            Err(e) => panic!("Cannot create uri from a valid one: {}", e),
         }
 
         match ::Uri::new("https://rust:1234567eight9@www.unknown.host:1345") {
-            Some(uri) => {
+            Ok(uri) => {
                 assert_eq!(uri.scheme, "https");
                 assert_eq!(uri.host.unwrap(), "www.unknown.host");
                 assert_eq!(uri.port.unwrap(), 1345);
                 assert_eq!(uri.username.unwrap(), "rust");
                 assert_eq!(uri.password.unwrap(), "1234567eight9");
             }
-            None => panic!("Cannot create uri from a valid one"),
+            Err(e) => panic!("Cannot create uri from a valid one: {}", e),
         }
     }
 
@@ -372,5 +364,23 @@ impl fmt::Display for Uri {
            -> fmt::Result {
         let mut writer = UriWriter::new(self, f);
         writer.write_uri()
+    }
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match f.write_str("ParseError: ") {
+            Ok(_) => return f.write_str(error::Error::description(self)),
+            Err(e) => return Err(e)
+        }
+    }
+}
+
+impl error::Error for ParseError {
+    fn description(&self) -> &str {
+        match *self {
+            ParseError::InvalidUri => return "Invalid URI string",
+            ParseError::InvalidScheme => return "Invalid URI scheme",
+        }
     }
 }
